@@ -1,5 +1,5 @@
 module.exports = {
-  "plugins": ['@typescript-eslint'],
+  plugins: ['@typescript-eslint'],
   extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   rules: {
     eqeqeq: 0, // 必须使用全等
@@ -8,8 +8,11 @@ module.exports = {
     'no-sparse-arrays': 2, // 数组中不允许出现空位置
     'no-empty': 0, // 禁止出现空语句块
     'no-console': ['error', { allow: ['warn', 'error', 'info', "log"] }],
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': 'off',
     'no-useless-escape': 0,
     "@typescript-eslint/no-explicit-any": "off"
+  },
+  env: {
+    node: true
   },
 }

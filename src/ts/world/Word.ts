@@ -1,7 +1,21 @@
-import { BoxGeometry, Clock, Color, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, ShaderMaterial, WebGLRenderer } from "three";
 import {
-  OrbitControls
-} from "three/examples/jsm/controls/OrbitControls";
+  BoxGeometry,
+  Clock,
+  Color,
+  Mesh,
+  MeshLambertMaterial,
+  MeshBasicMaterial,
+  AmbientLight,
+  PointLight,
+  PerspectiveCamera,
+  Scene,
+  ShaderMaterial,
+  WebGLRenderer,
+} from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+
 import * as _ from 'lodash'
 import { Pane } from 'tweakpane'
 
@@ -10,32 +24,31 @@ import { IWord } from '../interfaces/IWord'
 
 import { Basic } from './Basic'
 import Sizes from '../Utils/Sizes'
-import { Resources } from './Resources';
+import { Resources } from './Resources'
+import { Helper } from './Helper'
 
 // shader
 import boxVertex from '../../shaders/box/vertex.vs'
 import boxFragment from '../../shaders/box/fragment.fs'
-import { EventEmitter } from "pietile-eventemitter";
+import { EventEmitter } from 'pietile-eventemitter'
 
 // interface
-import {IEvents} from '../interfaces/IEvents'
-
+import { IEvents } from '../interfaces/IEvents'
 export default class World {
-  public basic: Basic;
-  public scene: Scene;
-  public camera: PerspectiveCamera;
+  public basic: Basic
+  public scene: Scene
+  public camera: PerspectiveCamera
   public renderer: WebGLRenderer
-  public controls: OrbitControls;
-  public sizes: Sizes;
-  public material: ShaderMaterial | MeshBasicMaterial;
-  public useShader = true;
-  public clock: Clock;
-  public debug: Pane;
-  public resources: Resources;
+  public controls: OrbitControls
+  public sizes: Sizes
+  public material: ShaderMaterial | MeshBasicMaterial
+  public useShader = false
+  public clock: Clock
+  public helper: Helper
+  public debug: Pane
+  public resources: Resources
   public emitter: EventEmitter<IEvents>
-  public option: IWord;
-
-
+  public option: IWord
 
   constructor(option: IWord) {
     /**
@@ -48,16 +61,17 @@ export default class World {
     this.renderer = this.basic.renderer
     this.controls = this.basic.controls
     this.camera = this.basic.camera
-
+    this.helper = new Helper(this.scene)
     this.sizes = new Sizes(this)
     this.clock = new Clock()
-
 
     this.initialize()
 
     this.resources = new Resources(() => {
       console.log('资源加载完成', this.resources)
       this.createBox() // 写你的逻辑吧 hxd
+      this.createLight()
+
       this.render()
     })
   }
@@ -79,44 +93,74 @@ export default class World {
    * 创建box
    */
   public createBox() {
-
-    const geometry = new BoxGeometry(1, 1, 1);
+    const geometry = new BoxGeometry(1, 1, 1)
+    const loader = new GLTFLoader()
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('/draco/')
+    loader.setDRACOLoader(dracoLoader)
+    console.log(loader)
+    loader.load(
+      './lib/Demo.glb',
+      (gltf) => {
+        console.log(gltf)
+        this.scene.add(gltf.scene)
+      },
+      function (xhr) {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+      },
+      function (error) {
+        console.error('An error happened', error)
+      }
+    )
 
     if (this.useShader) {
       this.material = new ShaderMaterial({
         uniforms: {
           uTime: {
-            value: 0
-          }
+            value: 0,
+          },
         },
         vertexShader: boxVertex,
-        fragmentShader: boxFragment
-      });
-
+        fragmentShader: boxFragment,
+      })
     } else {
-      this.material = new MeshBasicMaterial({ color: 0x00ff00 });
+      this.material = new MeshLambertMaterial({
+        // color: 0x00ff00,
+        map: this.resources.textures['earth'],
+      })
     }
-    const cube = new Mesh(geometry, this.material);
-    this.scene.add(cube);
+
+    const cube = new Mesh(geometry, this.material)
+    // this.scene.add(cube)
     this.controls.target = _.cloneDeep(cube.position)
     const PARAMS = {
-      cubeY: cube.position.y
-    };
-    this.debug
-      .addInput(
-        PARAMS, 'cubeY',
-        { min: -5, max: 5, step: 0.00001 }
-      )
-      .on('change', (e) => {
-        cube.position.y = e.value
-      })
+      cubeY: cube.position.y,
+    }
+    this.controls.update()
+    this.debug.addInput(PARAMS, 'cubeY', { min: -5, max: 5, step: 0.00001 }).on('change', (e) => {
+      cube.position.y = e.value
+    })
   }
+  public createLight() {
+    const ambientLight = new AmbientLight(0x404040, 1) // soft white light
+    this.scene.add(ambientLight)
+
+    const pointLight = new PointLight(0xff0000, 1, 0)
+    pointLight.position.set(500, 800, 150)
+    this.scene.add(pointLight)
+
+    this.helper.addLight(pointLight)
+    this.helper.addAxes()
+  }
+  // public createHelper() {
+  //   let a = new Helper()
+  // }
   /**
    * debug
    */
   private setDebug() {
     this.debug = new Pane({
-      title: '🎉 GhostCat 🎉',
+      title: '🎉 mingo 🎉',
       expanded: true,
     })
   }
@@ -128,6 +172,6 @@ export default class World {
     requestAnimationFrame(this.render.bind(this))
     this.renderer.render(this.scene, this.camera)
     this.controls && this.controls.update()
-    this.useShader && ((this.material as ShaderMaterial).uniforms.uTime.value = this.clock.getElapsedTime())
+    // this.useShader && ((this.material as ShaderMaterial).uniforms.uTime.value = this.clock.getElapsedTime())
   }
 }

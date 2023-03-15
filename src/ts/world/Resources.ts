@@ -7,7 +7,7 @@ export class Resources {
   private manager: LoadingManager
   private callback: () => void;
   private textureLoader!: InstanceType<typeof TextureLoader>;
-  private textures: any;
+  public textures: any;
   constructor(callback: () => void) {
     this.callback = callback // 资源加载完成的回调
 

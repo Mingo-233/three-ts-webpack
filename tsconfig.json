@@ -6,6 +6,7 @@
       "module": "ESNext",
       "target": "ESNext",
       "moduleResolution": "node",
+      "esModuleInterop": true,
       "declaration": true,
       "declarationDir": "build/types",
       "baseUrl": ".",

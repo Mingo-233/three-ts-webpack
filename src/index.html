@@ -1,47 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <html>
+<html>
 
 <head>
-	<title>GhostCat</title>
+  <title>GhostCat</title>
   <meta charset="utf-8">
 </head>
 <style>
-  html,body{
-    height:100%;
+  html,
+  body {
+    height: 100%;
   }
-  body{
+
+  body {
     overflow: hidden;
     position: relative;
   }
-  h1,h2{
+
+  h1,
+  h2 {
     position: absolute;
-    color:#fff;
+    color: #fff;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top:20vh;
+    padding-top: 20vh;
     pointer-events: none;
   }
-  h2{
+
+  h2 {
     pointer-events: all;
-    padding-top:25vh;
+    padding-top: 25vh;
   }
-  h2 a{
-    color:rgb(19, 22, 226);
+
+  h2 a {
+    color: rgb(19, 22, 226);
     font-size: 30px;
   }
 
-  #threejs-canvas{
+  #threejs-canvas {
     height: 100%;
     width: 100%;
   }
 </style>
 
 <body>
-  <h1>Webpack 5 + Typescript 4 + Threejs + Shader 基础模板</h1>
-  <h2><a target="_blank" href="https://github.com/GhostCatcg/three-ts-webpack">Github</a></h2>
   <div id="threejs-canvas"></div>
 </body>
 
